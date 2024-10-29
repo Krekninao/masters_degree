@@ -76,72 +76,72 @@ def quad(input_sig, target_freq, T, sample_rate):
     # plt.show()
     return R, phi, x_list
 
+if __name__ == "__main__":
+    # # путь к папке
+    # path = r'C:\Users\user\Desktop\Магистерская\Быстровка_07_07_10_Круг_6км\all_Unit\3seans_19'
+    # path = path.replace('\\', '/')
+    # # считывание данных из файлов
+    # sampl_rate_x, sampl_num_x, T_x, t_x, signal_x = read_file(path + f'/U.19x')
+    # sampl_rate_y, sampl_num_x, T_y, t_y, signal_y = read_file(path + f'/U.19y')
+    # #
+    # # # для демонстрации работы вадратурного алгоритма
+    # R_x, phi_x, x_list = quad(signal_x, 9.5, 100, 200)
+    # R_y, phi_y, x_list = quad(signal_y, 9.5, 100, 200)
 
-# # путь к папке
-# path = r'C:\Users\user\Desktop\Магистерская\Быстровка_07_07_10_Круг_6км\all_Unit\3seans_19'
-# path = path.replace('\\', '/')
-# # считывание данных из файлов
-# sampl_rate_x, sampl_num_x, T_x, t_x, signal_x = read_file(path + f'/U.19x')
-# sampl_rate_y, sampl_num_x, T_y, t_y, signal_y = read_file(path + f'/U.19y')
-# #
-# # # для демонстрации работы вадратурного алгоритма
-# R_x, phi_x, x_list = quad(signal_x, 9.5, 100, 200)
-# R_y, phi_y, x_list = quad(signal_y, 9.5, 100, 200)
+    ##################################################################################################################
+    # перебор всех частот, окон и файлов - построение графиков x от y
 
-##################################################################################################################
-# перебор всех частот, окон и файлов - построение графиков x от y
+    # искомые частоты
+    #list_target_freq = [8, 8.5, 9, 9.5, 10, 10.5]
+    list_target_freq = [9.5]
+    #list_target_freq = [8]
+    # ширина окна
+    #list_windows = [50, 100, 200, 300, 400, 500, 600]
+    list_windows = [300]
+    # номера файлов Быстровки типа U19.x
+    #num_files = [19, 20, 24, 25, 26, 27, 28]
+    num_files = [19]
 
-# искомые частоты
-#list_target_freq = [8, 8.5, 9, 9.5, 10, 10.5]
-list_target_freq = [9.5]
-#list_target_freq = [8]
-# ширина окна
-#list_windows = [50, 100, 200, 300, 400, 500, 600]
-list_windows = [300]
-# номера файлов Быстровки типа U19.x
-#num_files = [19, 20, 24, 25, 26, 27, 28]
-num_files = [19]
+    for target_freq in list_target_freq:
+        for num_file in num_files:
+            for window in list_windows:
+                print(f'Частота: {target_freq}, номер файла: U{num_file}, размер окна: {window}')
 
-for target_freq in list_target_freq:
-    for num_file in num_files:
-        for window in list_windows:
-            print(f'Частота: {target_freq}, номер файла: U{num_file}, размер окна: {window}')
+                # путь к папке
+                path = r'C:\Users\user\Desktop\Магистерская\Быстровка_07_07_10_Круг_6км\all_Unit\3seans_19'
+                path = path.replace('\\', '/')
+                # считывание данных из файлов
+                sampl_rate_x, sampl_num_x, T_x, t_x, signal_x = read_file(path + f'/U.{num_file}x')
+                sampl_rate_y, sampl_num_y, T_y, t_y, signal_y = read_file(path + f'/U.{num_file}y')
 
-            # путь к папке
-            path = r'C:\Users\user\Desktop\Магистерская\Быстровка_07_07_10_Круг_6км\all_Unit\3seans_19'
-            path = path.replace('\\', '/')
-            # считывание данных из файлов
-            sampl_rate_x, sampl_num_x, T_x, t_x, signal_x = read_file(path + f'/U.{num_file}x')
-            sampl_rate_y, sampl_num_y, T_y, t_y, signal_y = read_file(path + f'/U.{num_file}y')
+                # применение квадратурного фильтра
+                R_x, phi_x, x1_list = quad(signal_x, target_freq, window, 200)  # как автоматически определять 200???
+                R_y, phi_y, x2_list = quad(signal_y, target_freq, window, 200)
 
-            # применение квадратурного фильтра
-            R_x, phi_x, x1_list = quad(signal_x, target_freq, window, 200)  # как автоматически определять 200???
-            R_y, phi_y, x2_list = quad(signal_y, target_freq, window, 200)
+                # номер частоты (первая - под номером 0)
+                k = (target_freq - 8) // 0.5
+                # длина кусочка с учётом частоты дискретизации
+                lenght_part = len(t_x) // 6
 
-            # номер частоты (первая - под номером 0)
-            k = (target_freq - 8) // 0.5
-            # длина кусочка с учётом частоты дискретизации
-            lenght_part = len(t_x) // 6
-
-            start = int(lenght_part * k)
-            finish = int(lenght_part * (k + 1))
-            print(start, finish)
-            plt.figure()  # создание нового окна для графика
-            #графики для накоплений амплитуды
-            #plt.scatter(R_x[start: finish], R_y[start: finish], s=1)
-            #графики для накоплений начальных фаз
-            plt.scatter(phi_x[2000*200: 2500*200], phi_y[2000*200: 2500*200], s=1)
-            # plt.title(f'Частота: {target_freq}, номер файла: U{num_file}, размер окна: {window}')
-            # plt.xlabel(f'U.{num_file}x')
-            # plt.ylabel(f'U.{num_file}y')
-            # plt.grid()
-            #
-            # # формирование имени файла
-            # name_file = str(int(target_freq))
-            # # если частота нецелая - дописываем 5
-            # if target_freq != int(target_freq):
-            #     name_file += '_5'
-            # name_file += f'Гц_имя_U{num_file}_размер_окна_{window}'
-            # # plt.savefig(r'C:\Users\user\Desktop\Магистерская\Результаты Быстровка 6 км' \
-            # #             + f'\\{name_file}')
-            plt.show()
+                start = int(lenght_part * k)
+                finish = int(lenght_part * (k + 1))
+                print(start, finish)
+                plt.figure()  # создание нового окна для графика
+                #графики для накоплений амплитуды
+                #plt.scatter(R_x[start: finish], R_y[start: finish], s=1)
+                #графики для накоплений начальных фаз
+                plt.scatter(phi_x[2000*200: 2500*200], phi_y[2000*200: 2500*200], s=1)
+                # plt.title(f'Частота: {target_freq}, номер файла: U{num_file}, размер окна: {window}')
+                # plt.xlabel(f'U.{num_file}x')
+                # plt.ylabel(f'U.{num_file}y')
+                # plt.grid()
+                #
+                # # формирование имени файла
+                # name_file = str(int(target_freq))
+                # # если частота нецелая - дописываем 5
+                # if target_freq != int(target_freq):
+                #     name_file += '_5'
+                # name_file += f'Гц_имя_U{num_file}_размер_окна_{window}'
+                # # plt.savefig(r'C:\Users\user\Desktop\Магистерская\Результаты Быстровка 6 км' \
+                # #             + f'\\{name_file}')
+                plt.show()
