@@ -24,7 +24,6 @@ def read_file(file_name):
         sampl_type = struct.unpack('<h', f.read(2))[0]  # Длина и тип отсчета:
         tr_num = ord(struct.unpack('<c', f.read(1))[0])  # Номер трассы в исходном файле
         reserved_end = ord(struct.unpack('<c', f.read(1))[0])  # Зарезервировано
-        import numpy as np
 
         # Задаем параметры системы
         fs = sampl_rate  # Частота дискретизации
