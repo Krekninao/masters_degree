@@ -1,6 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.fft import fft, fftfreq
+import os
 from side import read_file, quad
 def spectr(signal, sampl_num, sampl_rate):
   sig_fft = fft(signal)
@@ -22,22 +23,31 @@ def spectr(signal, sampl_num, sampl_rate):
   #print("Max amplitude frequency: {:.2f} Hz".format(max_amp_freq))
   return max_amp_freq
 
-#num_file = 19
 #path = r'C:\Users\user\Desktop\Магистерская\Быстровка_07_07_10_Круг_6км\all_Unit\3seans_19'
-path = r'C:\Users\user\Desktop\Магистерская\ДАННЫЕ СТУДЕНТАМ\Грузовые поезда\freq_1_2_19_10302210.U8822Vk00'
-#path = r'C:\Users\user\Desktop\Магистерская\ДАННЫЕ СТУДЕНТАМ\Грузовые поезда\freq_19_10301410.U8822Vk00'
+#path = r'C:\Users\user\Desktop\Магистерская\ДАННЫЕ СТУДЕНТАМ\Грузовые поезда — копия\1\x'
+#path = r'C:\Users\user\Desktop\Магистерская\ДАННЫЕ СТУДЕНТАМ\Грузовые поезда — копия\freq_19_10301410.U8822Vk00'
 #path = r'C:\Users\user\Desktop\Магистерская\ДАННЫЕ СТУДЕНТАМ\Электрички\x_elec_19_10302210.U8822Vk00'
 
 #зашумлённые данные
 #path = r'C:\Users\user\Desktop\Магистерская\Зашумленные данные\0100200271.01x'
 #path = r'C:\Users\user\Desktop\Магистерская\Зашумленные данные\0100200272.01y'
 #path = r'C:\Users\user\Desktop\Магистерская\Зашумленные данные\0100200273.01z'
+#path = r'C:\Users\user\Desktop\Магистерская\ДАННЫЕ СТУДЕНТАМ\Электрички'
 
-
-path = path.replace('\\', '/')
+#изменение направление слэшей для корректной работы
+#path = path.replace('\\', '/')
 # считывание данных из файлов
-#sampl_rate_x, sampl_num_x, T_x, t_x, signal_x = read_file(path + f'/U.{num_file}x')
-sampl_rate_x, sampl_num_x, T_x, t_x, signal_x = read_file(path)
+#sampl_rate_x, sampl_num_x, T_x, t_x, signal_x = read_file(path)
+
+#суперсигнал
+path = r'C:\Users\user\Desktop\Магистерская\ДАННЫЕ СТУДЕНТАМ\Зашумленные данные'
+path_x = path + '\\x'
+path_y = path + '\\y'
+path_z = path + '\\z'
+sampl_rate_x, sampl_num_x, T_x, t_x, signal_x = read_file(path_x)
+sampl_rate_x, sampl_num_x, T_x, t_x, signal_y = read_file(path_y)
+sampl_rate_x, sampl_num_x, T_x, t_x, signal_z = read_file(path_z)
+signal_x = signal_x + signal_y + signal_z
 
 # #зашумленный сгенерированный сигнал
 # # Параметры сигнала
@@ -68,32 +78,107 @@ sampl_rate_x, sampl_num_x, T_x, t_x, signal_x = read_file(path)
 # t_x, signal_x = t, combined_signal
 
 
-#for i in range(len(signal_x))
-#размер окна
-win_size = 10
-window = 300
-seconds = list(range(0, int(t_x[-1]) + 1, win_size))
-phi_total = []
-for start, finish in zip(seconds, seconds[1:]):
-  #выделяем сигнал на отрезке в 5 секунд
-  #обдумать момент с концом интервала!
-  sig_part = signal_x[start * sampl_rate_x : finish * sampl_rate_x-1]
-  #определяем на этом отрезке доминирующую частоту
-  max_fr = spectr(sig_part, len(sig_part), sampl_rate_x)
-  print(max_fr)
-  #передаём эту частоту как опорную в квадратурный алгоритм
-  R_x, phi_x, x1_list = quad(sig_part, max_fr, window, sampl_rate_x)
-  #присоединяем возвращённый кусочек накоплений в общий список накоплений
-  phi_total.extend(R_x)
+# #размер окна
+# #win_size = 1
+# win_sizes = [1, 2, 3, 5, 10]
+# window = 300
+# for win_size in win_sizes:
+#   for file_name in ['x', 'y', 'z']:
+#     path = r'C:\Users\user\Desktop\Магистерская\ДАННЫЕ СТУДЕНТАМ\Зашумленные данные' + f'\\{file_name}'
+#     path = path.replace('\\', '/')
+#     sampl_rate_x, sampl_num_x, T_x, t_x, signal_x = read_file(path)
+#
+#     seconds = list(range(0, int(t_x[-1]) + 1, win_size))
+#     phi_total = []
+#     for start, finish in zip(seconds, seconds[1:]):
+#       #выделяем сигнал на отрезке в 5 секунд
+#       #обдумать момент с концом интервала!
+#       sig_part = signal_x[start * sampl_rate_x : finish * sampl_rate_x-1]
+#       #определяем на этом отрезке доминирующую частоту
+#       max_fr = spectr(sig_part, len(sig_part), sampl_rate_x)
+#       #передаём эту частоту как опорную в квадратурный алгоритм
+#       R_x, phi_x, x1_list = quad(sig_part, max_fr, window, sampl_rate_x)
+#       #присоединяем возвращённый кусочек накоплений в общий список накоплений
+#       phi_total.extend(R_x)
+#
+#     plt.figure(figsize=(15, 6))
+#     #накопилось на последнем участке
+#     #plt.plot(phi_x)
+#     #первые 10_000 значений
+#     #plt.plot(phi_total[:10000])
+#     #plt.title('Сигнал и накопление')
+#     plt.subplot(2, 1, 1)
+#     plt.plot(t_x, signal_x)
+#     plt.title('Оригинальный сигнал')
+#     plt.ylabel('Амплитуда')
+#     plt.xlabel('Время, с')
+#     plt.subplot(2, 1, 2)
+#     plt.plot(t_x[:len(phi_total)], phi_total)
+#     plt.title('Накопление')
+#     plt.ylabel('Амплитуда')
+#     plt.xlabel('Время, с')
+#
+#     # Установка расстояния между подграфиками
+#     plt.subplots_adjust(hspace=0.5)
+#     #plt.show()
+#
+#     # file_title = f'Грузовые поезда 1, {file_name}-компонента, размер окна - {win_size}c'
+#     # directory = r'C:\Users\user\Desktop\Магистерская\Результаты квадратурного фильтра\Квадратурный фильтр' \
+#     #             + f'\Грузовые поезда 1\\{win_size}'
+#
+#     file_title = f'Зашумленные данные, {file_name}-компонента, размер окна - {win_size}c'
+#     directory = r'C:\Users\user\Desktop\Магистерская\Результаты квадратурного фильтра\Квадратурный фильтр' \
+#                 + f'\Зашумленные данные\\{win_size}'
+#     if not os.path.exists(directory):
+#       os.mkdir(directory)
+#     plt.savefig(directory + f'\\{file_title}')
 
-plt.figure(figsize=(15, 6))
-#накопилось на последнем участке
-#plt.plot(phi_x)
-#первые 10_000 значений
-#plt.plot(phi_total[:10000])
-#plt.title('Сигнал и накопление')
-plt.subplot(2, 1, 1)
-plt.plot(t_x, signal_x)
-plt.subplot(2, 1, 2)
-plt.plot(t_x[:len(phi_total)], phi_total)
-plt.show()
+#размер окна
+#win_size = 1
+win_sizes = [0.5, 1, 2, 3, 5, 10]
+window = 300
+for win_size in win_sizes:
+  seconds = list(range(0, int(t_x[-1]) + 1, win_size))
+  phi_total = []
+  for start, finish in zip(seconds, seconds[1:]):
+    #выделяем сигнал на отрезке в 5 секунд
+    #обдумать момент с концом интервала!
+    sig_part = signal_x[start * sampl_rate_x : finish * sampl_rate_x-1]
+    #определяем на этом отрезке доминирующую частоту
+    max_fr = spectr(sig_part, len(sig_part), sampl_rate_x)
+    #передаём эту частоту как опорную в квадратурный алгоритм
+    R_x, phi_x, x1_list = quad(sig_part, max_fr, window, sampl_rate_x)
+    #присоединяем возвращённый кусочек накоплений в общий список накоплений
+    phi_total.extend(R_x)
+
+  plt.figure(figsize=(15, 6))
+  #накопилось на последнем участке
+  #plt.plot(phi_x)
+  #первые 10_000 значений
+  #plt.plot(phi_total[:10000])
+  #plt.title('Сигнал и накопление')
+  plt.subplot(2, 1, 1)
+  plt.plot(t_x, signal_x)
+  plt.title('Оригинальный сигнал')
+  plt.ylabel('Амплитуда')
+  plt.xlabel('Время, с')
+  plt.subplot(2, 1, 2)
+  plt.plot(t_x[:len(phi_total)], phi_total)
+  plt.title('Накопление')
+  plt.ylabel('Амплитуда')
+  plt.xlabel('Время, с')
+
+  # Установка расстояния между подграфиками
+  plt.subplots_adjust(hspace=0.5)
+  #plt.show()
+
+  # file_title = f'Грузовые поезда 1, {file_name}-компонента, размер окна - {win_size}c'
+  # directory = r'C:\Users\user\Desktop\Магистерская\Результаты квадратурного фильтра\Квадратурный фильтр' \
+  #             + f'\Грузовые поезда 1\\{win_size}'
+
+  file_title = f'Зашумленные данные(поезд), размер окна - {win_size}c'
+  directory = r'C:\Users\user\Desktop\Магистерская\Результаты квадратурного фильтра\Суперсигналы' \
+              + f'\Зашумленные данные(поезд)\\{win_size}'
+  if not os.path.exists(directory):
+    os.mkdir(directory)
+  plt.savefig(directory + f'\\{file_title}')
