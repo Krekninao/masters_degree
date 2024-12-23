@@ -50,7 +50,7 @@ def quad(input_sig, target_freq, T, sample_rate):
     target_omega = 2 * np.pi * target_freq
     input_size = len(input_sig)
     dt = 1 / sample_rate
-    t = np.arange(0, input_size * dt, dt)
+    t = np.arange(0, input_size * dt, dt)[:input_size]
     z_x = input_sig * np.sin(target_omega * t)
     z_y = input_sig * np.cos(target_omega * t)
     gamma = dt / T
